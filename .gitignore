@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript
+*.tsbuildinfo
+
+# Compiled files
+dist/
+*.css
+*.map
+*.js
+
+# Logs and databases
+*.log
+*.sqlite
+
+# OS generated files
+.DS_Store
+Thumbs.db
