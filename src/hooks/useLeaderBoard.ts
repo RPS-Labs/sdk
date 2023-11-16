@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from "axios";
 import { API_URL } from "../constants";
 
 interface LeaderBoardProps {
-  chain: "mainnet" | "goerli" | "sepolia";
+  chain: "ethereum" | "linea" | "sepolia" | "taiko" | "mantle" | "scroll";
   onSuccess: (data: ApiData) => void;
   onError: (error: ApiError) => void;
   // Add more parameters as needed
@@ -85,7 +85,7 @@ export function useLeaderBoard({
   };
   useEffect(() => {
     fetchData();
-  }, [chain]);
+  }, [chain, onSuccess, onError]);
 
   async function refetch(options: {
     throwOnError: boolean;
