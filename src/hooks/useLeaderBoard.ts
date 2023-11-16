@@ -11,76 +11,96 @@ interface LeaderBoardProps {
 
 interface ApiData {
   code: number;
-  formatted: string;
-  symbol: string;
-  value: bigint;
+  message: string;
 }
 
 interface ApiError {
   // Customize this based on the actual structure of your error object
   message: string;
+  code: number;
   // Add other error properties as needed
 }
 
 interface ApiHookResult {
-  data?: ApiData;
-  error?: ApiError;
+  data: ApiData | null;
+  error: ApiError | null;
   isIdle: boolean;
   isLoading: boolean;
-  isFetching: boolean;
   isSuccess: boolean;
   isError: boolean;
-  isFetched: boolean;
-  isFetchedAfterMount: boolean;
   isRefetching: boolean;
   refetch: (options: {
     throwOnError: boolean;
     cancelRefetch: boolean;
-  }) => Promise<ApiData>; // Adjust the Promise type based on your actual return data
+  }) => Promise<ApiData | null>; // Adjust the Promise type based on your actual return data
   status: "idle" | "error" | "loading" | "success";
 }
 
 // Define your custom hook
-export function useLeaderBoard({ chain }: LeaderBoardProps): ApiHookResult {
+export function useLeaderBoard({
+  chain,
+  onSuccess,
+  onError,
+}: LeaderBoardProps): ApiHookResult {
   const [data, setData] = useState<ApiData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const [isRefetching, setIsRefetching] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
   const [status, setStatus] = useState<
     "idle" | "error" | "loading" | "success"
   >("idle");
   const [isIdle, setIsIdle] = useState<boolean>(true);
 
-  const fetchData = async () => {
+  const fetchData: () => Promise<ApiData | null> = async () => {
+    let responseData = null;
     setStatus("loading");
     setIsIdle(false);
     try {
       const response: AxiosResponse<ApiData> = await axios.get(
         `${API_URL}/pot/latest_raffle?chain=${chain}`
       );
-      if (response.data.code) setData(response.data);
-
-      setIsSuccess(true);
-      setStatus("success");
+      if (response.data.code == null || response.data.code == 200) {
+        setData(response.data);
+        onSuccess(response.data);
+        setIsSuccess(true);
+        setStatus("success");
+        responseData = response.data;
+      } else {
+        setIsError(true);
+        setError(response.data);
+        onError(response.data);
+        setStatus("error");
+      }
     } catch (error: any) {
       setIsError(true);
-      setError(error.message || "An error occurred");
+      setError(error.message || { message: "An error occurred", code: 500 });
       setStatus("error");
     } finally {
       setIsLoading(false);
     }
     setIsIdle(true);
+    return responseData;
   };
   useEffect(() => {
     fetchData();
   }, [chain]);
 
-  async function refetch() {
-    setIsRefetching(true);
-    await fetchData();
-    setIsRefetching(false);
+  async function refetch(options: {
+    throwOnError: boolean;
+    cancelRefetch: boolean;
+  }): Promise<ApiData | null> {
+    if (options.cancelRefetch) return null;
+    try {
+      setIsRefetching(true);
+      const data = await fetchData();
+      setIsRefetching(false);
+      return data;
+    } catch (err) {
+      if (options.throwOnError) throw err;
+    }
+    return null;
   }
 
   return {
