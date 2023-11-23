@@ -1,5 +1,6 @@
 import { API_URL, fetcher } from "../constants";
 import useSWR from "swr";
+import { useRPSSDK } from "../provider";
 
 interface UserTicketsProps {
   chain: "ethereum" | "linea" | "sepolia" | "taiko" | "mantle" | "scroll";
@@ -21,9 +22,11 @@ export function useUserTickets({
   chain,
   user,
 }: UserTicketsProps): ApiHookResult {
+  const apiKey = useRPSSDK();
+
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    `${API_URL}/user/${user}/pot?chain=${chain}`,
-    () => fetcher(`${API_URL}/user/${user}/pot?chain=${chain}`)
+    [`${API_URL}/user/${user}/pot?chain=${chain}`, apiKey],
+    ([url, apiKey]) => fetcher(url, apiKey ?? "")
   );
   return {
     data,

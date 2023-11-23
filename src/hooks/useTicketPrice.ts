@@ -1,5 +1,6 @@
 import { API_URL, fetcher } from "../constants";
 import useSWR from "swr";
+import { useRPSSDK } from "../provider";
 
 interface ApiHookResult {
   data: any;
@@ -11,9 +12,10 @@ interface ApiHookResult {
 
 // Define your custom hook
 export function useTicketPrice(): ApiHookResult {
+  const apiKey = useRPSSDK();
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    `${API_URL}/hotpot_fee`,
-    () => fetcher(`${API_URL}/hotpot_fee`)
+    [`${API_URL}/hotpot_fee`, apiKey],
+    ([url, apiKey]) => fetcher(url, apiKey ?? "")
   );
 
   return {

@@ -1,5 +1,6 @@
 import { API_URL, fetcher } from "../constants";
 import useSWR from "swr";
+import { useRPSSDK } from "../provider";
 
 interface PotByIdProps {
   chain: "ethereum" | "linea" | "sepolia" | "taiko" | "mantle" | "scroll";
@@ -22,11 +23,12 @@ export function usePotById({
   user,
   potId,
 }: PotByIdProps): ApiHookResult {
-  const { data, error, isLoading, isValidating, mutate } = useSWR(
-    `${API_URL}/user/${user}/pot/${potId}?chain=${chain}`,
-    () => fetcher(`${API_URL}/user/${user}/pot/${potId}?chain=${chain}`)
-  );
+  const apiKey = useRPSSDK();
 
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
+    [`${API_URL}/user/${user}/pot/${potId}?chain=${chain}`, apiKey],
+    ([url, apiKey]) => fetcher(url, apiKey ?? "")
+  );
   return {
     data,
     error,

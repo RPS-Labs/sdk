@@ -1,7 +1,10 @@
 import axios, { AxiosResponse } from "axios";
 
 export const API_URL = "https://api.rpslabs.io";
-export const fetcher: (endpoint: string) => Promise<any> = async (endpoint) => {
+export const fetcher: (
+  endpoint: string,
+  apiKey: string
+) => Promise<any> = async (endpoint) => {
   let responseData = null;
   try {
     const response: AxiosResponse<any> = await axios.get(endpoint);

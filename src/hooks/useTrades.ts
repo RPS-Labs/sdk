@@ -1,5 +1,6 @@
 import { API_URL, fetcher } from "../constants";
 import useSWR from "swr";
+import { useRPSSDK } from "../provider";
 
 interface TradesProps {
   chain: "ethereum" | "linea" | "sepolia" | "taiko" | "mantle" | "scroll";
@@ -16,11 +17,12 @@ interface ApiHookResult {
 
 // Define your custom hook
 export function useTrades({ chain }: TradesProps): ApiHookResult {
-  const { data, error, isLoading, isValidating, mutate } = useSWR(
-    `${API_URL}/trades?chain=${chain}`,
-    () => fetcher(`${API_URL}/trades?chain=${chain}`)
-  );
+  const apiKey = useRPSSDK();
 
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
+    [`${API_URL}/trades?chain=${chain}`, apiKey],
+    ([url, apiKey]) => fetcher(url, apiKey ?? "")
+  );
   return {
     data,
     error,

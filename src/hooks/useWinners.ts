@@ -1,5 +1,6 @@
 import { API_URL, fetcher } from "../constants";
 import useSWR from "swr";
+import { useRPSSDK } from "../provider";
 
 interface WinnersProps {
   chain: "ethereum" | "linea" | "sepolia" | "taiko" | "mantle" | "scroll";
@@ -15,9 +16,11 @@ interface ApiHookResult {
 }
 
 export function useWinners({ chain }: WinnersProps): ApiHookResult {
+  const apiKey = useRPSSDK();
+
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    `${API_URL}/pot/winners?chain=${chain}`,
-    () => fetcher(`${API_URL}/pot/winners?chain=${chain}`)
+    [`${API_URL}/pot/winners?chain=${chain}`, apiKey],
+    ([url, apiKey]) => fetcher(url, apiKey ?? "")
   );
   return {
     data,
