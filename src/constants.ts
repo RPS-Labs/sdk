@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 export const API_URL = "https://api.rpslabs.io";
+export const PROVIDER = "https://rpc.ankr.com/eth_goerli";
 export const fetcher: (
   endpoint: string,
   apiKey: string
